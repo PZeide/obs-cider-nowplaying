@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cider Now Playing</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <script src="https://unpkg.com/node-vibrant/dist/vibrant.min.js"></script>
+
+    <script type="module">
+        import * as ciderWebSocket from "/static/cider-websocket.js";
+        
+        let container;
+        let trackArtwork;
+        let trackTitle;
+        let trackArtist;
+        let trackProgressBar;
+        document.addEventListener("DOMContentLoaded", () => {
+            container = document.getElementById("container");
+            trackArtwork = document.getElementById("track-artwork");
+            trackTitle = document.getElementById("track-title");
+            trackArtist = document.getElementById("track-artist");
+            trackProgressBar = document.getElementById("track-progress-bar");
+
+            ciderWebSocket.connect();
+        });
+
+        ciderWebSocket.onTrackChanged((trackAttributes) => {
+            console.log(`Track changed to ${trackAttributes.name}`);
+
+            container.classList.toggle("playing", true);
+            
+            trackArtwork.onload = async () => {
+                // For smooth transitions between track changes, wait for the artwork to load
+                // to change everything else.
+
+                if (trackArtwork.src) {
+                    const corsFriendlyUrl = "/corsfriendly?url=" + btoa(trackArtwork.src)
+                    const color = await Vibrant.from(corsFriendlyUrl).getPalette();
+                    trackProgressBar.style.backgroundColor = color.Vibrant.hex;
+                } else {
+                    trackProgressBar.style.backgroundColor = "white";
+                }
+
+                trackTitle.textContent = trackAttributes.name;
+                trackArtist.textContent = trackAttributes.artistName;
+            }
+
+            if (trackAttributes.artwork.url) {
+                trackArtwork.classList.toggle("missing", false);
+                const width = trackArtwork.width;
+                const height = trackArtwork.height;
+                const artworkUrl = trackAttributes.artwork.url.replace("{w}", width).replace("{h}", height);
+                trackArtwork.src = artworkUrl;
+            } else {
+                trackArtwork.classList.toggle("true", false);
+                trackArtwork.src = "";
+                // Call onload manually because we set src to nothing.
+                trackArtwork.onload();
+            }
+        });
+
+        ciderWebSocket.onTrackTimelineUpdate((timeline) => {
+            const progress = (timeline.position / timeline.duration) * 100;
+            console.log(`Track progress: ${progress}%`);
+
+            trackProgressBar.style.width = progress + "%";
+        });
+
+        ciderWebSocket.onPlaybackStop(() => {
+            console.log("Playback stopped !");
+
+            container.classList.toggle("playing", false);
+            trackArtwork.src = "";
+            trackProgressBar.style.backgroundColor = "none";
+            trackTitle.textContent = "";
+            trackArtist.textContent = "";
+        });
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet"> 
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+	<div id="container">
+        <img id="track-artwork" width="128" height="128">
+        <div id="track-info">
+            <div id="track-title"></div>
+            <div id="track-artist"></div>
+        </div>
+        <div id="track-progress-bar-container">
+            <div id="track-progress-bar"></div>
+        </div>
+    </div>
+</body>
+</html>

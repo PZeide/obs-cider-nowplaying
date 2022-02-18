@@ -1,0 +1,67 @@
+body {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+#container {
+    display: none;
+    grid-template-columns: 128px 1fr;
+    grid-template-rows: 122px 6px;
+    position: relative;
+    box-sizing: border-box;
+    height: 128px;
+    width: 100%;
+    min-width: 514px;
+}
+
+#container.playing {
+    display: grid;
+}
+
+#track-artwork {
+    object-fit: cover;
+    grid-area: 1 / 1 / 2 / 1;
+}
+
+#track-artwork.missing {
+    display: none;
+}
+
+#track-info {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#track-title, #track-artist {
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    margin: 0;
+    margin-left: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: top;
+    font-size: 31px;
+}
+
+#track-title {
+    font-weight: 400;
+    margin-top: 6px;
+}
+
+#track-artist {
+    font-weight: 300;
+    margin-top: 10px;
+}
+
+#track-progress-bar-container {
+    grid-column: 2;
+    grid-row: 2;
+    height: 6px;
+}
+
+#track-progress-bar {
+    height: 100%;
+    width: 0;
+}
