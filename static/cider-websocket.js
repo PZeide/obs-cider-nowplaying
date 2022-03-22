@@ -144,7 +144,7 @@ function playbackStateUpdate(data) {
         socket.send(JSON.stringify(musicKitApiPayload));
         validAttributesTimeout = setTimeout(() => {
             data._validAttributes = true;
-            playbackStateUpdate(data._validAttributes);
+            playbackStateUpdate(data);
             validAttributesTimeout = null;
         }, 1000);
 
